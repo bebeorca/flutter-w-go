@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:laundry_with_go/models/data_laundry.dart';
 import 'package:http/http.dart' as http;
+import 'package:laundry_with_go/views/card.dart';
 import 'package:laundry_with_go/views/detail.dart';
 
 class Home extends StatefulWidget {
@@ -75,7 +76,7 @@ class _HomeState extends State<Home> {
             await _fetchData();
           },
           child: Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(12.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -103,24 +104,8 @@ class _HomeState extends State<Home> {
                           background: Container(
                             color: Colors.red,
                           ),
-                          child: Card(
-                            child: ListTile(
-                              title: Text(
-                                getData.name,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                ),
-                              ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(getData.deskripsi),
-                                  Text(
-                                    getData.berat.toString(),
-                                  ),
-                                ],
-                              ),
-                            ),
+                          child: MyCard(
+                            data: getData,
                           ),
                         ),
                         onTap: () {
