@@ -17,6 +17,7 @@ class _HomeState extends State<Home> {
   List<Data> listPesanan = [];
   var isLoading = false;
   String url = "http://192.168.1.11:8080/api";
+
   Future _fetchData() async {
     String daftarPesananEndPoint = "$url/daftarpesanan";
     try {
@@ -40,6 +41,25 @@ class _HomeState extends State<Home> {
     }
   }
 
+  Future _deleteItem(int id) async {
+    String deleteItemep = "$url/pesanan/";
+
+    var arg = jsonEncode({
+      "id": id,
+    });
+
+    try {
+      final response = await http.delete(Uri.parse(deleteItemep), body: arg);
+
+      if (response.statusCode == 200) {
+        final resp = jsonDecode(response.body);
+        log("$resp");
+      }
+    } catch (e) {
+      log("Error di sini: $e");
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -50,65 +70,78 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Daftar Pemesan",
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await _fetchData();
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Daftar Pemesan",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                child: isLoading
-                    ? const Center(
-                        child: CircularProgressIndicator(),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: () async {
-                          await _fetchData();
-                        },
-                        child: SingleChildScrollView(
-                          child: Column(
-                            children: List.generate(
-                              listPesanan.length,
-                              (index) {
-                                final getData = listPesanan[index];
-                                return InkWell(
-                                  child: Card(
-                                    child: ListTile(
-                                      title: Text(
-                                        getData.name,
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                                      subtitle: Text(
-                                        getData.berat.toString(),
-                                      ),
-                                    ),
+                const SizedBox(height: 12),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: listPesanan.length,
+                    itemBuilder: (context, index) {
+                      final getData = listPesanan[index];
+                      return InkWell(
+                        child: Dismissible(
+                          key: UniqueKey(),
+                          direction: DismissDirection.endToStart,
+                          onDismissed: (direction) async {
+                            await _deleteItem(getData.id);
+                            await _fetchData();
+                          },
+                          background: Container(
+                            color: Colors.red,
+                          ),
+                          child: Card(
+                            child: ListTile(
+                              title: Text(
+                                getData.name,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                ),
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(getData.deskripsi),
+                                  Text(
+                                    getData.berat.toString(),
                                   ),
-                                  onTap: () {
-                                    Navigator.push(context, MaterialPageRoute(
-                                      builder: (context) {
-                                        return DetailPesanan(
-                                            namaPemesan: getData.name,
-                                            beratTotal: getData.berat);
-                                      },
-                                    ));
-                                  },
-                                );
-                              },
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-              ),
-            ],
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) {
+                                return DetailPesanan(
+                                  namaPemesan: getData.name,
+                                  beratTotal: getData.berat,
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
