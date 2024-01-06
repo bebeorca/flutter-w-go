@@ -1,13 +1,14 @@
 import 'dart:developer';
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:laundry_with_go/models/data_laundry.dart';
 
 class APIHelper {
-  static String url = "http://192.168.1.11:8080/api";
+  static String url = "http://192.168.1.16:8080/api";
   static List<Data> listPesanan = [];
 
-  static Future<void> fetchData() async {
+  static Future<void> fetchData(VoidCallback callback) async {
     String daftarPesananEndPoint = "$url/daftarpesanan";
     try {
       final response = await http.get(Uri.parse(daftarPesananEndPoint));
@@ -20,6 +21,8 @@ class APIHelper {
         for (Map<String, dynamic> i in data["data"]) {
           listPesanan.add(Data.fromJson(i));
         }
+
+        callback();
       }
     } catch (e) {
       log("Ada anu: $e");

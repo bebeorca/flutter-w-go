@@ -1,6 +1,8 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:laundry_with_go/helper/api_helper.dart';
-import 'package:laundry_with_go/views/card.dart';
+import 'package:laundry_with_go/viewcomponents/card.dart';
 import 'package:laundry_with_go/views/detail.dart';
 
 class Home extends StatefulWidget {
@@ -11,19 +13,30 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  Future<void> fetchData() async {
+    try {
+      await APIHelper.fetchData(() {
+        setState(() {});
+      });
+    } catch (e) {
+      log("Ini di home: $e");
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    APIHelper.fetchData();
+    fetchData();
   }
 
   @override
   Widget build(BuildContext context) {
+    // var size = MediaQuery.of(context).size.width / 8;
     return Scaffold(
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            await APIHelper.fetchData();
+            await fetchData();
           },
           child: Padding(
             padding: const EdgeInsets.all(12.0),
@@ -48,12 +61,57 @@ class _HomeState extends State<Home> {
                           key: UniqueKey(),
                           direction: DismissDirection.endToStart,
                           onDismissed: (direction) async {
-                            await APIHelper.deleteItem(getData.id);
-                            await APIHelper.fetchData();
+                            await showDialog(
+                              context: context,
+                              builder: ((context) {
+                                Widget cancelButton = TextButton(
+                                  child: const Text("TIDAK"),
+                                  onPressed: () async {
+                                    Navigator.pop(context);
+                                    await fetchData();
+                                  },
+                                );
+                                Widget continueButton = TextButton(
+                                  child: const Text("HAPUS"),
+                                  onPressed: () async {
+                                    Navigator.pop(context);
+                                    await APIHelper.deleteItem(getData.id);
+                                    await fetchData();
+                                  },
+                                );
+
+                                return AlertDialog(
+                                  title: const Text("Hapus Pesanan"),
+                                  content: const Text("Pesanan telah selesai?"),
+                                  actions: [
+                                    cancelButton,
+                                    continueButton,
+                                  ],
+                                );
+                              }),
+                            );
                           },
                           background: Container(
-                            color: Colors.red,
-                          ),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(
+                                  8.0,
+                                ),
+                                color: Colors.red,
+                              ),
+                              child: const Padding(
+                                padding: EdgeInsets.only(right: 14.0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.delete,
+                                      color: Colors.white,
+                                      size: 36,
+                                    )
+                                  ],
+                                ),
+                              )),
                           child: MyCard(
                             data: getData,
                           ),

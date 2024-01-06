@@ -36,7 +36,10 @@ class _MyCardState extends State<MyCard> {
             Container(
               width: MediaQuery.of(context).size.width,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: const BorderRadius.only(
+                  topRight: Radius.circular(8.0),
+                  topLeft: Radius.circular(8.0),
+                ),
                 color: Colors.orange[100],
               ),
               child: Padding(

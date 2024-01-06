@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:laundry_with_go/views/home.dart';
+import 'package:laundry_with_go/views/login.dart';
 
 void main() {
   runApp(
@@ -14,7 +14,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Home(),
+      home: LoginView(),
     );
   }
 }
